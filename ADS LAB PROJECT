@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+ 
+#define MAX_CITIES 100
+#define INF INT_MAX
+ 
+struct Edge {
+    char src[50], dest[50];
+    int weight;
+};
+ 
+struct Graph {
+    int V, E;
+    struct Edge* edges;
+};
+struct Graph* createGraph(int V, int E) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->V = V;
+    graph->E = E;
+    graph->edges = (struct Edge*)malloc(E * sizeof(struct Edge));
+    return graph;
+}
+ 
+void dijkstra(struct Graph* graph, char src[], char dest[]) {
+    int V = graph->V;
+    int dist[V];
+    int prev[V];
+ 
+    // Initialize distances and previous nodes
+    for (int i = 0; i < V; i++) {
+        dist[i] = INF;
+        prev[i] = -1;
+    }
+    int srcIndex = -1, destIndex = -1;
+    for (int i = 0; i < V; i++) {
+        if (strcmp(graph->edges[i].src, src) == 0) {
+            srcIndex = i;
+        }
+        if (strcmp(graph->edges[i].dest, dest) == 0) {
+            destIndex = i;
+        }
+    }
+ 
+    if (srcIndex == -1 || destIndex == -1) {
+        printf("Source or destination city not found in the graph.\n");
+        return;
+    }
+ 
+    dist[srcIndex] = 0; // Distance from source to itself is 0
+ 
+  
+    for (int i = 0; i < V - 1; i++) {
+        for (int j = 0; j < graph->E; j++) {
+            int u = j; // For simplicity, we use indices as vertices
+            int v = destIndex;
+            int weight = graph->edges[j].weight;
+            if (dist[u] != INF && dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                prev[v] = u;
+            }
+        }
+    }
+ 
+    printf("Shortest distance from %s to %s is: %d\n", src, dest, -dist[destIndex]);
+    printf("Shortest path is: %s <- ", dest);
+    int current = destIndex;
+    while (current != srcIndex) {
+        printf("%s <- ", graph->edges[current].src);
+        current = prev[current];
+    }
+    printf("%s\n", src);
+}
+ 
+int main() {
+    int numCities, numEdges;
+    printf("Enter the number of cities: ");
+    scanf("%d", &numCities);
+ 
+    printf("Enter the number of connections between cities: ");
+    scanf("%d", &numEdges);
+     struct Graph* graph = createGraph(numCities, numEdges);
+       for (int i = 0; i < numEdges; i++) {
+        printf("Enter source city, destination city, and distance between them: ");
+        scanf("%s %s %d", graph->edges[i].src, graph->edges[i].dest, &graph->edges[i].weight);
+    }
+ 
+    char startCity[50], endCity[50];
+    printf("Enter the starting city and ending city: ");
+    scanf("%s %s", startCity, endCity);
+     dijkstra(graph, startCity, endCity);
+     return 0;
+}
